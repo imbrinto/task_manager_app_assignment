@@ -1,11 +1,20 @@
+import 'dart:async';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:task_manager_app_assignment/data/models/login_model.dart';
+import 'package:task_manager_app_assignment/data/models/network_response.dart';
+import 'package:task_manager_app_assignment/data/network_caller/network_caller.dart';
+import 'package:task_manager_app_assignment/data/utilities/urls.dart';
+import 'package:task_manager_app_assignment/ui/controllers/auth_controller.dart';
 import 'package:task_manager_app_assignment/ui/screen/auth/email_verification_screen.dart';
 import 'package:task_manager_app_assignment/ui/screen/auth/sign_up_screen.dart';
 import 'package:task_manager_app_assignment/ui/screen/main_bottom_nav_bar.dart';
 import 'package:task_manager_app_assignment/ui/utilities/app_colors.dart';
 import 'package:task_manager_app_assignment/ui/utilities/app_constants.dart';
 import 'package:task_manager_app_assignment/ui/widgets/background_widget.dart';
+import 'package:task_manager_app_assignment/ui/widgets/centred_progress_indicator.dart';
+import 'package:task_manager_app_assignment/ui/widgets/show_snack_bar_message.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -18,6 +27,8 @@ class _SignInScreenState extends State<SignInScreen> {
   final TextEditingController _emailTEController = TextEditingController();
   final TextEditingController _passwordTEController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  bool _showPassword = false;
+  bool _isSignInApiInProgress = false;
 
   @override
   Widget build(BuildContext context) {
@@ -40,13 +51,15 @@ class _SignInScreenState extends State<SignInScreen> {
                     ),
                     const SizedBox(height: 8),
                     TextFormField(
+                      controller: _emailTEController,
                       style: const TextStyle(color: Colors.black),
                       keyboardType: TextInputType.emailAddress,
-                      validator: (String? value){
-                        if(value?.trim().isEmpty ?? true){
+                      validator: (String? value) {
+                        if (value?.trim().isEmpty ?? true) {
                           return 'Enter email address';
                         }
-                        if(AppConstants.emailRegExp.hasMatch(value!) == false){
+                        if (AppConstants.emailRegExp.hasMatch(value!) ==
+                            false) {
                           return 'Enter a valid email address';
                         }
                         return null;
@@ -57,25 +70,44 @@ class _SignInScreenState extends State<SignInScreen> {
                     ),
                     const SizedBox(height: 8),
                     TextFormField(
+                      controller: _passwordTEController,
+                      obscureText: _showPassword == false,
                       style: const TextStyle(color: Colors.black),
-                      validator: (String? value){
-                        if(value?.trim().isEmpty ?? true){
+                      validator: (String? value) {
+                        if (value?.trim().isEmpty ?? true) {
                           return 'Enter password';
                         }
                         return null;
                       },
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            _showPassword = !_showPassword;
+                            if (mounted) setState(() {});
+                          },
+                          icon: _showPassword
+                              ? const Icon(
+                                  Icons.visibility_outlined,
+                                  color: Colors.grey,
+                                )
+                              : const Icon(
+                                  Icons.visibility_off_outlined,
+                                  color: Colors.grey,
+                                ),
+                        ),
                         hintText: 'Password',
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: () {
-                        if(_formKey.currentState!.validate()){
+                    const SizedBox(height: 12),
+                    Visibility(
+                      visible: _isSignInApiInProgress == false,
+                      replacement: const CentredProgressIndicator(),
+                      child: ElevatedButton(
+                        onPressed: () {
                           _onTapNavToMainBottomNavBar();
-                        }
-                      },
-                      child: const Icon(Icons.arrow_circle_right_outlined),
+                        },
+                        child: const Icon(Icons.arrow_circle_right_outlined),
+                      ),
                     ),
                     const SizedBox(height: 50),
                     buildRedirectToSignUpAndForgotPassScreen(),
@@ -90,12 +122,44 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 
   void _onTapNavToMainBottomNavBar() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const MainBottomNavBar(),
-      ),
-    );
+    if (_formKey.currentState!.validate()) {
+      _signIn();
+    }
+  }
+
+  Future<void> _signIn() async {
+    _isSignInApiInProgress = true;
+    if (mounted) setState(() {});
+
+    Map<String, dynamic> requestInput = {
+      "email": _emailTEController.text,
+      "password": _passwordTEController.text
+    };
+
+    NetworkResponse response =
+        await NetworkCaller.postRequest(Urls.login, body: requestInput);
+    _isSignInApiInProgress = false;
+    if (mounted) setState(() {});
+
+    if (response.isSuccess) {
+      LoginModel loginModel = LoginModel.fromJson(response.responseData);
+      await AuthController.saveUserAccessToken(loginModel.token!);
+      await AuthController.saveUserData(loginModel.userModel!);
+
+
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const MainBottomNavBar(),
+          ),
+        );
+      }
+    } else {
+      if (mounted) {
+        showSnackBarMessage(context, "Email/Password is incorrect! Try again.",true);
+      }
+    }
   }
 
   Widget buildRedirectToSignUpAndForgotPassScreen() {
@@ -158,6 +222,7 @@ class _SignInScreenState extends State<SignInScreen> {
       ),
     );
   }
+
   @override
   void dispose() {
     super.dispose();

@@ -1,11 +1,11 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:task_manager_app_assignment/ui/screen/auth/email_verification_screen.dart';
-import 'package:task_manager_app_assignment/ui/screen/auth/sign_up_screen.dart';
-import 'package:task_manager_app_assignment/ui/screen/main_bottom_nav_bar.dart';
-import 'package:task_manager_app_assignment/ui/utilities/app_colors.dart';
+import 'package:task_manager_app_assignment/data/models/network_response.dart';
+import 'package:task_manager_app_assignment/data/network_caller/network_caller.dart';
+import 'package:task_manager_app_assignment/data/utilities/urls.dart';
 import 'package:task_manager_app_assignment/ui/widgets/background_widget.dart';
+import 'package:task_manager_app_assignment/ui/widgets/centred_progress_indicator.dart';
 import 'package:task_manager_app_assignment/ui/widgets/profile_app_bar.dart';
+import 'package:task_manager_app_assignment/ui/widgets/show_snack_bar_message.dart';
 
 class AddNewTaskScreen extends StatefulWidget {
   const AddNewTaskScreen({super.key});
@@ -19,6 +19,7 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
   final TextEditingController _descriptionTEController =
       TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  bool _addNewTaskInProgress = false;
 
   @override
   Widget build(BuildContext context) {
@@ -56,23 +57,28 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
                     TextFormField(
                       style: const TextStyle(color: Colors.black),
                       maxLines: 4,
-                      validator: (String? value){
-                        if(value!.trim().isEmpty){
+                      validator: (String? value) {
+                        if (value!.trim().isEmpty) {
                           return 'Enter Description';
-                        }return null;
+                        }
+                        return null;
                       },
                       decoration: const InputDecoration(
                         hintText: 'Description',
                       ),
                     ),
                     const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: () {
-                        if(_formKey.currentState!.validate()){
-
-                        }
-                      },
-                      child: const Icon(Icons.arrow_circle_right_outlined),
+                    Visibility(
+                      visible: _addNewTaskInProgress == false,
+                      replacement: const CentredProgressIndicator(),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          if (_formKey.currentState!.validate()) {
+                            _addNewTask();
+                          }
+                        },
+                        child: const Icon(Icons.arrow_circle_right_outlined),
+                      ),
                     ),
                     const SizedBox(height: 50),
                   ],
@@ -83,6 +89,40 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _addNewTask() async {
+    _addNewTaskInProgress = true;
+    if (mounted) setState(() {});
+
+    Map<String, dynamic> requestData = {
+      "title": _titleTEController.text.trim(),
+      "description": _descriptionTEController.text,
+      "status": "New",
+    };
+
+    NetworkResponse response = await NetworkCaller.postRequest(
+      Urls.createTask,
+      body: requestData,
+    );
+    _addNewTaskInProgress = false;
+    if (mounted) setState(() {});
+
+    if(response.isSuccess){
+      _clearTextFields();
+      if(mounted){
+        showSnackBarMessage(context, 'New task added!');
+      }
+    }else{
+      if(mounted){
+        showSnackBarMessage(context, 'New task add failed! Try again.' ,true);
+      }
+    }
+  }
+
+  void _clearTextFields() {
+    _titleTEController.clear();
+    _descriptionTEController.clear();
   }
 
   @override

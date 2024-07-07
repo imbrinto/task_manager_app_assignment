@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:task_manager_app_assignment/ui/controllers/auth_controller.dart';
 import 'package:task_manager_app_assignment/ui/screen/auth/sign_in_screen.dart';
 import 'package:task_manager_app_assignment/ui/screen/update_profile_screen.dart';
 import 'package:task_manager_app_assignment/ui/utilities/app_colors.dart';
@@ -30,17 +31,17 @@ AppBar profileAppBar(BuildContext context,[fromUpdateScreen = false]) {
         }
         _onTapNavToUpdateProfile(context);
       },
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Dummy Name',
-            style: TextStyle(
+            AuthController.userData?.fullName ?? '',
+            style: const TextStyle(
                 color: Colors.white, fontWeight: FontWeight.w500, fontSize: 13),
           ),
           Text(
-            'email@gmail.com',
-            style: TextStyle(
+            AuthController.userData?.email ?? '',
+            style: const TextStyle(
                 color: Colors.white, fontWeight: FontWeight.w500, fontSize: 13),
           ),
         ],
@@ -48,7 +49,8 @@ AppBar profileAppBar(BuildContext context,[fromUpdateScreen = false]) {
     ),
     actions: [
       IconButton(
-        onPressed: () {
+        onPressed: () async {
+          await AuthController.clearAllData();
           Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(builder: (context) => const SignInScreen()),
