@@ -42,6 +42,7 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
                     ),
                     const SizedBox(height: 8),
                     TextFormField(
+                      controller: _titleTEController,
                       style: const TextStyle(color: Colors.black),
                       validator: (String? value) {
                         if (value!.trim().isEmpty) {
@@ -55,6 +56,7 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
                     ),
                     const SizedBox(height: 8),
                     TextFormField(
+                      controller: _descriptionTEController,
                       style: const TextStyle(color: Colors.black),
                       maxLines: 4,
                       validator: (String? value) {
