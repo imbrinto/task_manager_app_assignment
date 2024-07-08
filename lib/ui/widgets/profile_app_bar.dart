@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:task_manager_app_assignment/ui/controllers/auth_controller.dart';
 import 'package:task_manager_app_assignment/ui/screen/auth/sign_in_screen.dart';
@@ -5,28 +7,31 @@ import 'package:task_manager_app_assignment/ui/screen/update_profile_screen.dart
 import 'package:task_manager_app_assignment/ui/utilities/app_colors.dart';
 import 'package:task_manager_app_assignment/ui/widgets/network_cached_image.dart';
 
-AppBar profileAppBar(BuildContext context,[fromUpdateScreen = false]) {
+AppBar profileAppBar(BuildContext context, [fromUpdateScreen = false]) {
   return AppBar(
     backgroundColor: AppColors.themeColor,
-    leading: Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: CircleAvatar(
-        child: GestureDetector(
-          onTap: () {
-            if(fromUpdateScreen){
-              return;
-            }
-            _onTapNavToUpdateProfile(context);
-          },
-          child: const NetworkCachedImage(
-            url: '',
+    leading: GestureDetector(
+      onTap: () {
+        if (fromUpdateScreen) {
+          return;
+        }
+        _onTapNavToUpdateProfile(context);
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: CircleAvatar(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(50),
+            child: Image.memory(
+              base64Decode(AuthController.userData?.photo ?? ''),
+            ),
           ),
         ),
       ),
     ),
     title: GestureDetector(
       onTap: () {
-        if(fromUpdateScreen){
+        if (fromUpdateScreen) {
           return;
         }
         _onTapNavToUpdateProfile(context);

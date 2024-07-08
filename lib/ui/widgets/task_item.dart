@@ -26,7 +26,7 @@ class _TaskItemState extends State<TaskItem> {
   String dropdownValue = '';
   List<String> statusList = [
     'New',
-    'Progress',
+    'In Progress',
     'Completed',
     'Cancelled',
   ];

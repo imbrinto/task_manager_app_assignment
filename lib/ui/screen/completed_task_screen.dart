@@ -59,7 +59,7 @@ class _CompletedTaskScreenState extends State<CompletedTaskScreen> {
     } else {
       if (mounted) {
         showSnackBarMessage(context,
-            response.errorMessage ?? 'Get new task failed! Try again.', true);
+            response.errorMessage ?? 'Get completed tasks failed! Try again.', true);
       }
     }
     _getCompletedTaskInProgress = false;
