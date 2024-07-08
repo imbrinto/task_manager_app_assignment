@@ -53,7 +53,7 @@ class _InProgressTaskScreenState extends State<InProgressTaskScreen> {
     _getInProgressTasksInProgress = true;
     if (mounted) setState(() {});
 
-    NetworkResponse response =
+    final NetworkResponse response =
         await NetworkCaller.getRequest(Urls.inProgressTasks);
     if (response.isSuccess) {
       TaskListWrapperModel taskListWrapperModel =
