@@ -75,11 +75,6 @@ class _PinVerificationScreenState extends State<PinVerificationScreen> {
     final NetworkResponse response = await NetworkCaller.getRequest(
         Urls.recoveryOTP(
             widget.emailAddressForRecovery, _pinTEController.text.trim()));
-    debugPrint(response.isSuccess.toString());
-    debugPrint(_pinTEController.text.toString());
-    debugPrint(widget.emailAddressForRecovery.toString());
-    debugPrint(Urls.recoveryOTP(
-        widget.emailAddressForRecovery, _pinTEController.text.trim()));
     if (response.isSuccess && response.responseData['status'] == 'success') {
       _onTapNavToSetPassScreen();
       if (mounted) {

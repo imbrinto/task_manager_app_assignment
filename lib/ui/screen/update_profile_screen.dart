@@ -123,7 +123,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
       "email": _emailTEController.text,
       "firstName": _firstNameTEController.text,
       "lastName": _lastNameTEController.text,
-      "mobile": _mobileTEController,
+      "mobile": _mobileTEController.text,
     };
     if (_passwordTEController.text.isNotEmpty) {
       requestData['password'] = _passwordTEController.text;
